@@ -1,6 +1,5 @@
 import { randomUUID } from "node:crypto";
 
-import { loadConfigRouteTag } from "./accounts.js";
 import { logger } from "../util/logger.js";
 import { redactToken } from "../util/redact.js";
 
@@ -56,13 +55,7 @@ async function fetchQRCode(apiBaseUrl: string, botType: string): Promise<QRCodeR
   const url = new URL(`ilink/bot/get_bot_qrcode?bot_type=${encodeURIComponent(botType)}`, base);
   logger.info(`Fetching QR code from: ${url.toString()}`);
 
-  const headers: Record<string, string> = {};
-  const routeTag = loadConfigRouteTag();
-  if (routeTag) {
-    headers.SKRouteTag = routeTag;
-  }
-
-  const response = await fetch(url.toString(), { headers });
+  const response = await fetch(url.toString());
   if (!response.ok) {
     const body = await response.text().catch(() => "(unreadable)");
     logger.error(`QR code fetch failed: ${response.status} ${response.statusText} body=${body}`);
@@ -79,10 +72,6 @@ async function pollQRStatus(apiBaseUrl: string, qrcode: string): Promise<StatusR
   const headers: Record<string, string> = {
     "iLink-App-ClientVersion": "1",
   };
-  const routeTag = loadConfigRouteTag();
-  if (routeTag) {
-    headers.SKRouteTag = routeTag;
-  }
 
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), QR_LONG_POLL_TIMEOUT_MS);

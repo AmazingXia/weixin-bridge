@@ -3,7 +3,6 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { loadConfigRouteTag } from "../auth/accounts.js";
 import { logger } from "../util/logger.js";
 import { redactBody, redactUrl } from "../util/redact.js";
 
@@ -14,8 +13,6 @@ import type {
   GetUpdatesReq,
   GetUpdatesResp,
   SendMessageReq,
-  SendTypingReq,
-  GetConfigResp,
 } from "./types.js";
 
 export type WeixinApiOptions = {
@@ -52,8 +49,6 @@ export function buildBaseInfo(): BaseInfo {
 const DEFAULT_LONG_POLL_TIMEOUT_MS = 35_000;
 /** Default timeout for regular API requests (sendMessage, getUploadUrl). */
 const DEFAULT_API_TIMEOUT_MS = 15_000;
-/** Default timeout for lightweight API requests (getConfig, sendTyping). */
-const DEFAULT_CONFIG_TIMEOUT_MS = 10_000;
 
 function ensureTrailingSlash(url: string): string {
   return url.endsWith("/") ? url : `${url}/`;
@@ -74,10 +69,6 @@ function buildHeaders(opts: { token?: string; body: string }): Record<string, st
   };
   if (opts.token?.trim()) {
     headers.Authorization = `Bearer ${opts.token.trim()}`;
-  }
-  const routeTag = loadConfigRouteTag();
-  if (routeTag) {
-    headers.SKRouteTag = routeTag;
   }
   logger.debug(
     `requestHeaders: ${JSON.stringify({ ...headers, Authorization: headers.Authorization ? "Bearer ***" : undefined })}`,
@@ -202,39 +193,5 @@ export async function sendMessage(
     token: params.token,
     timeoutMs: params.timeoutMs ?? DEFAULT_API_TIMEOUT_MS,
     label: "sendMessage",
-  });
-}
-
-/** Fetch bot config (includes typing_ticket) for a given user. */
-export async function getConfig(
-  params: WeixinApiOptions & { ilinkUserId: string; contextToken?: string },
-): Promise<GetConfigResp> {
-  const rawText = await apiFetch({
-    baseUrl: params.baseUrl,
-    endpoint: "ilink/bot/getconfig",
-    body: JSON.stringify({
-      ilink_user_id: params.ilinkUserId,
-      context_token: params.contextToken,
-      base_info: buildBaseInfo(),
-    }),
-    token: params.token,
-    timeoutMs: params.timeoutMs ?? DEFAULT_CONFIG_TIMEOUT_MS,
-    label: "getConfig",
-  });
-  const resp: GetConfigResp = JSON.parse(rawText);
-  return resp;
-}
-
-/** Send a typing indicator to a user. */
-export async function sendTyping(
-  params: WeixinApiOptions & { body: SendTypingReq },
-): Promise<void> {
-  await apiFetch({
-    baseUrl: params.baseUrl,
-    endpoint: "ilink/bot/sendtyping",
-    body: JSON.stringify({ ...params.body, base_info: buildBaseInfo() }),
-    token: params.token,
-    timeoutMs: params.timeoutMs ?? DEFAULT_CONFIG_TIMEOUT_MS,
-    label: "sendTyping",
   });
 }

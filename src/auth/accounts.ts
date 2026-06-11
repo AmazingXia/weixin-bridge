@@ -94,7 +94,3 @@ export function saveWeixinAccount(
     // best-effort
   }
 }
-
-export function loadConfigRouteTag(): string | undefined {
-  return process.env.WEIXIN_ROUTE_TAG?.trim() || undefined;
-}

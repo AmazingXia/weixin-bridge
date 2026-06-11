@@ -193,30 +193,3 @@ export interface SendMessageReq {
 export interface SendMessageResp {
   // empty
 }
-
-/** Typing status: 1 = typing (default), 2 = cancel typing. */
-export const TypingStatus = {
-  TYPING: 1,
-  CANCEL: 2,
-} as const;
-
-/** SendTyping request: send a typing indicator to a user. */
-export interface SendTypingReq {
-  ilink_user_id?: string;
-  typing_ticket?: string;
-  /** 1=typing (default), 2=cancel typing */
-  status?: number;
-}
-
-export interface SendTypingResp {
-  ret?: number;
-  errmsg?: string;
-}
-
-/** GetConfig response: bot config including typing_ticket. */
-export interface GetConfigResp {
-  ret?: number;
-  errmsg?: string;
-  /** Base64-encoded typing ticket for sendTyping. */
-  typing_ticket?: string;
-}

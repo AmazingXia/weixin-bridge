@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 import { listStandaloneAccounts, resolveStandaloneAccount } from "./standalone/accounts.js";
 import { startWeixinBridge } from "./standalone/bridge.js";
-import { postMessageToWebhook } from "./standalone/http-webhook.js";
 import { loginWeixinStandalone } from "./standalone/login.js";
 
 type CliOptions = Record<string, string | boolean>;
@@ -12,7 +11,6 @@ function usage(): string {
     "  weixin-bridge login [--base-url <url>] [--account-id <id>] [--force]",
     "  weixin-bridge accounts",
     "  weixin-bridge test-chat [--account-id <id>] [--reply-prefix <text>]",
-    "  weixin-bridge bridge --webhook <url> [--account-id <id>] [--secret <token>]",
     "",
     "Environment:",
     "  WEIXIN_STATE_DIR   Standalone credential/state directory",
@@ -90,26 +88,6 @@ async function runTestChat(options: CliOptions): Promise<void> {
   });
 }
 
-async function runWebhookBridge(options: CliOptions): Promise<void> {
-  const webhook = optionString(options, "webhook");
-  if (!webhook) {
-    throw new Error("bridge 需要 --webhook <url>");
-  }
-
-  const account = resolveStandaloneAccount(optionString(options, "accountId"));
-  const secret = optionString(options, "secret");
-  console.log(`bridge 已启动 accountId=${account.accountId} webhook=${webhook}`);
-  console.log("按 Ctrl+C 退出。");
-
-  await startWeixinBridge({
-    accountId: account.accountId,
-    token: account.token,
-    baseUrl: account.baseUrl,
-    cdnBaseUrl: account.cdnBaseUrl,
-    onMessage: (message) => postMessageToWebhook(message, { url: webhook, secret }),
-  });
-}
-
 async function main(): Promise<void> {
   const { command, options } = parseArgs(process.argv.slice(2));
   if (!command || command === "help" || command === "--help" || command === "-h") {
@@ -127,10 +105,6 @@ async function main(): Promise<void> {
   }
   if (command === "test-chat") {
     await runTestChat(options);
-    return;
-  }
-  if (command === "bridge") {
-    await runWebhookBridge(options);
     return;
   }
 
