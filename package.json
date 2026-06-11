@@ -1,15 +1,19 @@
 {
-  "name": "@tencent-weixin/weixin-bridge",
+  "name": "weixin-bridge",
   "version": "1.0.3",
   "description": "Standalone Weixin long-poll bridge",
   "license": "MIT",
   "author": "Tencent",
   "type": "module",
   "bin": {
-    "weixin-bridge": "./dist/cli.js"
+    "weixin-bridge": "dist/cli.js"
   },
   "exports": {
     ".": "./dist/standalone/index.js"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
   },
   "files": [
     "dist/",
