@@ -42,7 +42,7 @@ export async function sendMessageWeixin(params: {
   to: string;
   text: string;
   opts: WeixinApiOptions & { contextToken?: string };
-}): Promise<{ messageId: string }> {
+}): Promise<{ messageId: string; response: unknown }> {
   const { to, text, opts } = params;
   if (!opts.contextToken) {
     logger.warn(`sendMessageWeixin: contextToken missing for to=${to}, sending without context`);
@@ -55,17 +55,17 @@ export async function sendMessageWeixin(params: {
     clientId,
   });
   try {
-    await sendMessageApi({
+    const response = await sendMessageApi({
       baseUrl: opts.baseUrl,
       token: opts.token,
       timeoutMs: opts.timeoutMs,
       body: req,
     });
+    return { messageId: clientId, response };
   } catch (err) {
     logger.error(`sendMessageWeixin: failed to=${to} clientId=${clientId} err=${String(err)}`);
     throw err;
   }
-  return { messageId: clientId };
 }
 
 /**

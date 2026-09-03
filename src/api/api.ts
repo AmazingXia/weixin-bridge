@@ -185,8 +185,8 @@ export async function getUploadUrl(
 /** Send a single message downstream. */
 export async function sendMessage(
   params: WeixinApiOptions & { body: SendMessageReq },
-): Promise<void> {
-  await apiFetch({
+): Promise<unknown> {
+  const rawText = await apiFetch({
     baseUrl: params.baseUrl,
     endpoint: "ilink/bot/sendmessage",
     body: JSON.stringify({ ...params.body, base_info: buildBaseInfo() }),
@@ -194,4 +194,9 @@ export async function sendMessage(
     timeoutMs: params.timeoutMs ?? DEFAULT_API_TIMEOUT_MS,
     label: "sendMessage",
   });
+  try {
+    return JSON.parse(rawText);
+  } catch {
+    return rawText;
+  }
 }
